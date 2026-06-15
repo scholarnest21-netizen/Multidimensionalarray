@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>2D & Multidimensional Arrays in C — ScholarNest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --surface2: #1c2230;
+      --border:   #30363d;
+      --accent:   #4f9cf9;
+      --accent2:  #7ee787;
+      --accent3:  #f9c846;
+      --accent4:  #ff7b72;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --font-head: 'Playfair Display', serif;
+      --font-body: 'Space Grotesk', sans-serif;
+      --font-code: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, #4f9cf9 0%, #7ee787 100%);
+      display: grid; place-items: center;
+      font-family: var(--font-head); font-size: 18px; color: #0d1117; font-weight: 700;
+    }
+    .logo-text { font-size: 15px; font-weight: 600; color: var(--text); }
+    .logo-text span { color: var(--accent); }
+    .nav-tag {
+      font-size: 12px; font-family: var(--font-code);
+      background: rgba(79,156,249,.12); color: var(--accent);
+      border: 1px solid rgba(79,156,249,.3); border-radius: 20px;
+      padding: 3px 12px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 88vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 80px 24px 60px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(79,156,249,.13) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(126,231,135,.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-code); font-size: 13px; color: var(--accent2);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: clamp(2.4rem, 6vw, 4.4rem);
+      line-height: 1.12; color: var(--text);
+      max-width: 800px;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub {
+      margin-top: 20px; font-size: 1.1rem; color: var(--muted);
+      max-width: 560px; line-height: 1.75;
+    }
+    .hero-grid {
+      margin-top: 56px;
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 16px;
+      width: 100%; max-width: 700px;
+    }
+    .hero-stat {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 12px; text-align: center;
+    }
+    .hero-stat .num { font-family: var(--font-code); font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+    .hero-stat .lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* ── TOC ── */
+    .toc-bar {
+      background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 14px 32px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+    }
+    .toc-bar a {
+      font-size: 13px; font-family: var(--font-code); color: var(--muted);
+      text-decoration: none; padding: 5px 14px; border-radius: 20px;
+      border: 1px solid transparent; transition: all .2s;
+    }
+    .toc-bar a:hover { color: var(--accent); border-color: rgba(79,156,249,.4); background: rgba(79,156,249,.07); }
+
+    /* ── SECTIONS ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+    section { padding: 72px 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    .sec-label {
+      font-family: var(--font-code); font-size: 12px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    h2 {
+      font-family: var(--font-head); font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+      color: var(--text); margin-bottom: 20px; line-height: 1.2;
+    }
+    h3 {
+      font-family: var(--font-body); font-size: 1.15rem; font-weight: 600;
+      color: var(--accent2); margin: 32px 0 12px;
+    }
+    p { color: #cdd2d8; margin-bottom: 16px; }
+    strong { color: var(--text); }
+
+    /* ── CODE BLOCKS ── */
+    .code-wrap {
+      background: #0d1117; border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; margin: 24px 0;
+      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    .code-header {
+      background: var(--surface2); padding: 10px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .code-header .dots { display: flex; gap: 6px; }
+    .code-header .dots span { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28c840; }
+    .code-header .fname { font-family: var(--font-code); font-size: 12px; color: var(--muted); }
+    pre {
+      padding: 22px 20px; overflow-x: auto;
+      font-family: var(--font-code); font-size: 13.5px; line-height: 1.75;
+    }
+    /* syntax colours */
+    .kw  { color: #ff79c6; }
+    .ty  { color: #8be9fd; }
+    .fn  { color: #50fa7b; }
+    .cm  { color: #6272a4; }
+    .str { color: #f1fa8c; }
+    .num { color: #bd93f9; }
+    .pp  { color: #ffb86c; }
+    .op  { color: #ff79c6; }
+    .var { color: #f8f8f2; }
+
+    /* ── CONCEPT CARDS ── */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 16px; margin: 28px 0; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px; transition: border-color .2s, transform .2s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .card-icon { font-size: 24px; margin-bottom: 10px; }
+    .card h4 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .card p { font-size: 14px; color: var(--muted); margin: 0; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-left: 3px solid var(--accent3);
+      background: rgba(249,200,70,.06); border-radius: 0 10px 10px 0;
+      padding: 16px 20px; margin: 24px 0;
+    }
+    .callout.tip { border-color: var(--accent2); background: rgba(126,231,135,.06); }
+    .callout.warn { border-color: var(--accent4); background: rgba(255,123,114,.06); }
+    .callout-head { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+    .callout.tip .callout-head { color: var(--accent2); }
+    .callout.warn .callout-head { color: var(--accent4); }
+    .callout p { margin: 0; font-size: 14px; color: var(--muted); }
+
+    /* ── TABLE ── */
+    .tbl-wrap { overflow-x: auto; margin: 24px 0; border-radius: 12px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: var(--surface2); font-family: var(--font-code); font-size: 13px; color: var(--accent); padding: 12px 18px; text-align: left; }
+    td { padding: 11px 18px; font-size: 14px; border-top: 1px solid var(--border); color: #cdd2d8; font-family: var(--font-code); }
+    tr:hover td { background: rgba(255,255,255,.03); }
+
+    /* ── MATRIX VISUAL ── */
+    .matrix-visual {
+      display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+      justify-content: center; margin: 28px 0;
+    }
+    .matrix {
+      display: grid; gap: 4px;
+      font-family: var(--font-code); font-size: 14px;
+    }
+    .matrix.m3 { grid-template-columns: repeat(3,1fr); }
+    .matrix.m2 { grid-template-columns: repeat(2,1fr); }
+    .cell {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; width: 48px; height: 48px;
+      display: grid; place-items: center; color: var(--text);
+      transition: background .2s;
+    }
+    .cell.hl  { background: rgba(79,156,249,.22); border-color: var(--accent); color: var(--accent); }
+    .cell.hl2 { background: rgba(126,231,135,.18); border-color: var(--accent2); color: var(--accent2); }
+    .cell.hl3 { background: rgba(249,200,70,.18); border-color: var(--accent3); color: var(--accent3); }
+    .matrix-label { font-family: var(--font-code); font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; }
+    .op-sign { font-size: 28px; color: var(--muted); }
+    .bracket-wrap { display: flex; flex-direction: column; align-items: center; }
+
+    /* ── FORMULA ── */
+    .formula {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 22px; margin: 18px 0;
+      font-family: var(--font-code); font-size: 14px; color: var(--accent3);
+      text-align: center;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 48px 24px; text-align: center;
+    }
+    .footer-logo { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 14px; text-decoration: none; }
+    .footer-sub { font-size: 14px; color: var(--muted); }
+    .footer-sub a { color: var(--accent); text-decoration: none; }
+    .footer-sub a:hover { text-decoration: underline; }
+    .footer-divider { margin: 24px auto; width: 60px; height: 1px; background: var(--border); }
+    .footer-copy { font-size: 12px; color: #4d5561; font-family: var(--font-code); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .hero-grid { grid-template-columns: repeat(3,1fr); gap: 10px; }
+      nav { padding: 12px 16px; }
+      .toc-bar { padding: 12px 16px; }
+      section { padding: 48px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="logo-wrap" href="https://scholarnest21.netlify.app" target="_blank">
+    <div class="logo-icon">SN</div>
+    <div class="logo-text"><span>Scholar</span>Nest</div>
+  </a>
+  <span class="nav-tag">C Programming Notes</span>
+</nav>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <p class="hero-eyebrow">// Unit Notes · C Programming</p>
+  <h1>2D &amp; <em>Multidimensional</em><br>Arrays in C</h1>
+  <p class="hero-sub">From declaration to matrix multiplication — a complete, code-rich guide to working with arrays beyond one dimension.</p>
+  <div class="hero-grid">
+    <div class="hero-stat"><div class="num">8+</div><div class="lbl">Topics Covered</div></div>
+    <div class="hero-stat"><div class="num">10+</div><div class="lbl">Code Examples</div></div>
+    <div class="hero-stat"><div class="num">3D</div><div class="lbl">Arrays Included</div></div>
+  </div>
+</header>
+
+<!-- ── TOC ── -->
+<nav class="toc-bar">
+  <a href="#intro">Introduction</a>
+  <a href="#declare">Declaration</a>
+  <a href="#input">Input</a>
+  <a href="#access">Access Elements</a>
+  <a href="#addition">Matrix Addition</a>
+  <a href="#multiply">Multiplication</a>
+  <a href="#transpose">Transpose</a>
+  <a href="#multidim">Multi-D Arrays</a>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — INTRODUCTION
+══════════════════════════════════════════ -->
+<section id="intro">
+  <div class="container">
+    <p class="sec-label">01 — Introduction</p>
+    <h2>What is a 2D Array?</h2>
+    <p>A <strong>2D array</strong> (two-dimensional array) is an array of arrays. You can think of it as a <strong>table with rows and columns</strong> — exactly like a spreadsheet or a matrix in mathematics. Each element is identified by two indices: the row index and the column index.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <h4>Matrix Representation</h4>
+        <p>A 2D array maps directly to a mathematical matrix. Perfect for linear algebra operations.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗂️</div>
+        <h4>Row-Major Storage</h4>
+        <p>C stores 2D arrays in row-major order — all elements of row 0, then row 1, etc., in contiguous memory.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔢</div>
+        <h4>Two Indices</h4>
+        <p>Access any element using <code style="color:var(--accent3)">arr[row][col]</code> — rows and columns both start from 0.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧩</div>
+        <h4>Fixed Size</h4>
+        <p>The size of a 2D array must be known at compile time (unless using dynamic allocation with pointers).</p>
+      </div>
+    </div>
+
+    <!-- visual -->
+    <h3>Visual: 3×3 Matrix</h3>
+    <div class="matrix-visual">
+      <div class="bracket-wrap">
+        <div class="matrix m3">
+          <div class="cell hl">1</div><div class="cell">2</div><div class="cell">3</div>
+          <div class="cell">4</div><div class="cell hl2">5</div><div class="cell">6</div>
+          <div class="cell">7</div><div class="cell">8</div><div class="cell hl3">9</div>
+        </div>
+        <div class="matrix-label">arr[3][3]<br><span style="color:var(--accent)">arr[0][0]=1</span> | <span style="color:var(--accent2)">arr[1][1]=5</span> | <span style="color:var(--accent3)">arr[2][2]=9</span></div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-head">💡 Memory Tip</div>
+      <p>A 2D array <code>int a[3][4]</code> occupies <strong>3 × 4 × 4 = 48 bytes</strong> (each int is 4 bytes). It is stored as 12 consecutive integers in memory.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — DECLARATION & INITIALIZATION
+══════════════════════════════════════════ -->
+<section id="declare">
+  <div class="container">
+    <p class="sec-label">02 — Declaration</p>
+    <h2>Declaration &amp; Initialization</h2>
+    <p>Declaring a 2D array requires specifying both the number of <strong>rows</strong> and <strong>columns</strong>.</p>
+
+    <div class="formula">data_type  array_name [ ROWS ] [ COLS ];</div>
+
+    <h3>Example 1 — Declaration</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">declare.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+
+    <span class="cm">/* Declaration only — garbage values */</span>
+    <span class="ty">int</span> <span class="var">a</span>[<span class="num">3</span>][<span class="num">3</span>];
+
+    <span class="cm">/* Declaration + Initialization */</span>
+    <span class="ty">int</span> <span class="var">b</span>[<span class="num">2</span>][<span class="num">3</span>] <span class="op">=</span> {
+        {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>},   <span class="cm">// Row 0</span>
+        {<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>}    <span class="cm">// Row 1</span>
+    };
+
+    <span class="cm">/* Partial initialization — rest filled with 0 */</span>
+    <span class="ty">int</span> <span class="var">c</span>[<span class="num">3</span>][<span class="num">3</span>] <span class="op">=</span> {{<span class="num">1</span>}, {<span class="num">4</span>}, {<span class="num">7</span>}};
+
+    <span class="cm">/* Zero-initialize entire array */</span>
+    <span class="ty">int</span> <span class="var">d</span>[<span class="num">4</span>][<span class="num">4</span>] <span class="op">=</span> {<span class="num">0</span>};
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <div class="callout">
+      <div class="callout-head">📌 Note</div>
+      <p>When initializing at declaration, the first dimension (rows) can be omitted — the compiler will count them. The <strong>column count must always be specified</strong>.<br>e.g. <code>int b[][3] = {{1,2,3},{4,5,6}};</code> is valid.</p>
+    </div>
+
+    <h3>Size Rules</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Declaration</th><th>Rows</th><th>Cols</th><th>Total Elements</th><th>Memory (int)</th></tr>
+        <tr><td>int a[2][3]</td><td>2</td><td>3</td><td>6</td><td>24 bytes</td></tr>
+        <tr><td>int b[4][4]</td><td>4</td><td>4</td><td>16</td><td>64 bytes</td></tr>
+        <tr><td>int c[3][5]</td><td>3</td><td>5</td><td>15</td><td>60 bytes</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — INPUT
+══════════════════════════════════════════ -->
+<section id="input">
+  <div class="container">
+    <p class="sec-label">03 — Input</p>
+    <h2>Taking Input from the User</h2>
+    <p>We use <strong>nested for loops</strong> to read values into a 2D array. The outer loop iterates over rows and the inner loop iterates over columns.</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">input.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="pp">#define</span> <span class="var">ROWS</span> <span class="num">3</span>
+<span class="pp">#define</span> <span class="var">COLS</span> <span class="num">3</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">mat</span>[<span class="var">ROWS</span>][<span class="var">COLS</span>];
+    <span class="ty">int</span> <span class="var">i</span>, <span class="var">j</span>;
+
+    <span class="fn">printf</span>(<span class="str">"Enter elements of a %dx%d matrix:\n"</span>, <span class="var">ROWS</span>, <span class="var">COLS</span>);
+
+    <span class="cm">/* --- INPUT --- */</span>
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">ROWS</span>; <span class="var">i</span><span class="op">++</span>) {
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">COLS</span>; <span class="var">j</span><span class="op">++</span>) {
+            <span class="fn">printf</span>(<span class="str">"  mat[%d][%d] = "</span>, <span class="var">i</span>, <span class="var">j</span>);
+            <span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="op">&amp;</span><span class="var">mat</span>[<span class="var">i</span>][<span class="var">j</span>]);
+        }
+    }
+
+    <span class="cm">/* --- DISPLAY --- */</span>
+    <span class="fn">printf</span>(<span class="str">"\nMatrix:\n"</span>);
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">ROWS</span>; <span class="var">i</span><span class="op">++</span>) {
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">COLS</span>; <span class="var">j</span><span class="op">++</span>) {
+            <span class="fn">printf</span>(<span class="str">"%4d"</span>, <span class="var">mat</span>[<span class="var">i</span>][<span class="var">j</span>]);
+        }
+        <span class="fn">printf</span>(<span class="str">"\n"</span>);
+    }
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-head">💡 Format Tip</div>
+      <p>Use <code>%4d</code> (width specifier) while printing to align columns neatly. For larger numbers, increase the width (e.g., <code>%6d</code>).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — ACCESSING ELEMENTS
+══════════════════════════════════════════ -->
+<section id="access">
+  <div class="container">
+    <p class="sec-label">04 — Access Elements</p>
+    <h2>Accessing Elements</h2>
+    <p>Elements of a 2D array are accessed using two indices: <strong>arr[row][col]</strong>. Both indices start from <strong>0</strong>.</p>
+
+    <div class="formula">element  =  arr [ row_index ] [ col_index ]</div>
+
+    <div class="matrix-visual">
+      <div class="bracket-wrap">
+        <div class="matrix m3">
+          <div class="cell">10</div><div class="cell hl">20</div><div class="cell">30</div>
+          <div class="cell">40</div><div class="cell">50</div><div class="cell hl3">60</div>
+          <div class="cell">70</div><div class="cell">80</div><div class="cell">90</div>
+        </div>
+        <div class="matrix-label">
+          <span style="color:var(--accent)">arr[0][1] = 20</span> &nbsp;|&nbsp;
+          <span style="color:var(--accent3)">arr[1][2] = 60</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">access.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">arr</span>[<span class="num">3</span>][<span class="num">3</span>] <span class="op">=</span> {
+        {<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>},
+        {<span class="num">40</span>, <span class="num">50</span>, <span class="num">60</span>},
+        {<span class="num">70</span>, <span class="num">80</span>, <span class="num">90</span>}
+    };
+
+    <span class="cm">/* Access specific elements */</span>
+    <span class="fn">printf</span>(<span class="str">"arr[0][1] = %d\n"</span>, <span class="var">arr</span>[<span class="num">0</span>][<span class="num">1</span>]);  <span class="cm">// 20</span>
+    <span class="fn">printf</span>(<span class="str">"arr[1][2] = %d\n"</span>, <span class="var">arr</span>[<span class="num">1</span>][<span class="num">2</span>]);  <span class="cm">// 60</span>
+    <span class="fn">printf</span>(<span class="str">"arr[2][0] = %d\n"</span>, <span class="var">arr</span>[<span class="num">2</span>][<span class="num">0</span>]);  <span class="cm">// 70</span>
+
+    <span class="cm">/* Modify an element */</span>
+    <span class="var">arr</span>[<span class="num">1</span>][<span class="num">1</span>] <span class="op">=</span> <span class="num">99</span>;
+    <span class="fn">printf</span>(<span class="str">"arr[1][1] after change = %d\n"</span>, <span class="var">arr</span>[<span class="num">1</span>][<span class="num">1</span>]);  <span class="cm">// 99</span>
+
+    <span class="cm">/* Print entire array */</span>
+    <span class="ty">int</span> <span class="var">i</span>, <span class="var">j</span>;
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="num">3</span>; <span class="var">i</span><span class="op">++</span>) {
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="num">3</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="fn">printf</span>(<span class="str">"%4d"</span>, <span class="var">arr</span>[<span class="var">i</span>][<span class="var">j</span>]);
+        <span class="fn">printf</span>(<span class="str">"\n"</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-head">⚠️ Out of Bounds</div>
+      <p>C does <strong>not</strong> check array bounds at runtime. Accessing <code>arr[3][0]</code> in a 3×3 array causes <strong>undefined behaviour</strong> — always keep indices within <code>[0, ROWS-1]</code> and <code>[0, COLS-1]</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — MATRIX ADDITION
+══════════════════════════════════════════ -->
+<section id="addition">
+  <div class="container">
+    <p class="sec-label">05 — Matrix Addition</p>
+    <h2>Matrix Addition</h2>
+    <p>Two matrices can be added only if they have the <strong>same dimensions</strong>. Corresponding elements are added: <code>C[i][j] = A[i][j] + B[i][j]</code>.</p>
+
+    <div class="matrix-visual">
+      <div class="bracket-wrap">
+        <div class="matrix m2">
+          <div class="cell hl">1</div><div class="cell hl">2</div>
+          <div class="cell hl">3</div><div class="cell hl">4</div>
+        </div>
+        <div class="matrix-label">A[2][2]</div>
+      </div>
+      <span class="op-sign">+</span>
+      <div class="bracket-wrap">
+        <div class="matrix m2">
+          <div class="cell hl2">5</div><div class="cell hl2">6</div>
+          <div class="cell hl2">7</div><div class="cell hl2">8</div>
+        </div>
+        <div class="matrix-label">B[2][2]</div>
+      </div>
+      <span class="op-sign">=</span>
+      <div class="bracket-wrap">
+        <div class="matrix m2">
+          <div class="cell hl3">6</div><div class="cell hl3">8</div>
+          <div class="cell hl3">10</div><div class="cell hl3">12</div>
+        </div>
+        <div class="matrix-label">C[2][2]</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">matrix_addition.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="pp">#define</span> <span class="var">R</span> <span class="num">3</span>
+<span class="pp">#define</span> <span class="var">C</span> <span class="num">3</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">A</span>[<span class="var">R</span>][<span class="var">C</span>], <span class="var">B</span>[<span class="var">R</span>][<span class="var">C</span>], <span class="var">sum</span>[<span class="var">R</span>][<span class="var">C</span>];
+    <span class="ty">int</span> <span class="var">i</span>, <span class="var">j</span>;
+
+    <span class="fn">printf</span>(<span class="str">"Enter elements of Matrix A (%dx%d):\n"</span>, <span class="var">R</span>, <span class="var">C</span>);
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>; <span class="var">i</span><span class="op">++</span>)
+        <span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="op">&amp;</span><span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>]);
+
+    <span class="fn">printf</span>(<span class="str">"Enter elements of Matrix B (%dx%d):\n"</span>, <span class="var">R</span>, <span class="var">C</span>);
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>; <span class="var">i</span><span class="op">++</span>)
+        <span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="op">&amp;</span><span class="var">B</span>[<span class="var">i</span>][<span class="var">j</span>]);
+
+    <span class="cm">/* Addition Logic */</span>
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>; <span class="var">i</span><span class="op">++</span>)
+        <span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="var">sum</span>[<span class="var">i</span>][<span class="var">j</span>] <span class="op">=</span> <span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>] <span class="op">+</span> <span class="var">B</span>[<span class="var">i</span>][<span class="var">j</span>];
+
+    <span class="fn">printf</span>(<span class="str">"\nSum Matrix:\n"</span>);
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>; <span class="var">i</span><span class="op">++</span>) {
+        <span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="fn">printf</span>(<span class="str">"%6d"</span>, <span class="var">sum</span>[<span class="var">i</span>][<span class="var">j</span>]);
+        <span class="fn">printf</span>(<span class="str">"\n"</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — MATRIX MULTIPLICATION
+══════════════════════════════════════════ -->
+<section id="multiply">
+  <div class="container">
+    <p class="sec-label">06 — Multiplication</p>
+    <h2>Matrix Multiplication</h2>
+    <p>Matrix multiplication is possible only when the <strong>number of columns of A equals the number of rows of B</strong>. If A is <em>m×n</em> and B is <em>n×p</em>, the result C is <em>m×p</em>.</p>
+
+    <div class="formula">C[i][j]  =  Σ  A[i][k] × B[k][j]  &nbsp;for k = 0 to n-1</div>
+
+    <div class="callout">
+      <div class="callout-head">📌 Dimension Rule</div>
+      <p><strong>A[m][n] × B[n][p] = C[m][p]</strong> — the inner dimensions must match, the outer dimensions give you the result size. This requires <strong>three nested loops</strong>.</p>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">matrix_multiply.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="pp">#define</span> <span class="var">M</span> <span class="num">2</span>   <span class="cm">// rows of A</span>
+<span class="pp">#define</span> <span class="var">N</span> <span class="num">3</span>   <span class="cm">// cols of A = rows of B</span>
+<span class="pp">#define</span> <span class="var">P</span> <span class="num">2</span>   <span class="cm">// cols of B</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">A</span>[<span class="var">M</span>][<span class="var">N</span>] <span class="op">=</span> {{<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>}, {<span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span>}};
+    <span class="ty">int</span> <span class="var">B</span>[<span class="var">N</span>][<span class="var">P</span>] <span class="op">=</span> {{<span class="num">7</span>,<span class="num">8</span>}, {<span class="num">9</span>,<span class="num">10</span>}, {<span class="num">11</span>,<span class="num">12</span>}};
+    <span class="ty">int</span> <span class="var">C</span>[<span class="var">M</span>][<span class="var">P</span>] <span class="op">=</span> {<span class="num">0</span>};  <span class="cm">// Initialize result to 0</span>
+    <span class="ty">int</span> <span class="var">i</span>, <span class="var">j</span>, <span class="var">k</span>;
+
+    <span class="cm">/* ── Three nested loops ── */</span>
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">M</span>; <span class="var">i</span><span class="op">++</span>) {         <span class="cm">// row of A</span>
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">P</span>; <span class="var">j</span><span class="op">++</span>) {     <span class="cm">// col of B</span>
+            <span class="kw">for</span> (<span class="var">k</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">k</span> <span class="op">&lt;</span> <span class="var">N</span>; <span class="var">k</span><span class="op">++</span>) { <span class="cm">// inner loop</span>
+                <span class="var">C</span>[<span class="var">i</span>][<span class="var">j</span>] <span class="op">+=</span> <span class="var">A</span>[<span class="var">i</span>][<span class="var">k</span>] <span class="op">*</span> <span class="var">B</span>[<span class="var">k</span>][<span class="var">j</span>];
+            }
+        }
+    }
+
+    <span class="fn">printf</span>(<span class="str">"Result Matrix C [%dx%d]:\n"</span>, <span class="var">M</span>, <span class="var">P</span>);
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">M</span>; <span class="var">i</span><span class="op">++</span>) {
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">P</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="fn">printf</span>(<span class="str">"%6d"</span>, <span class="var">C</span>[<span class="var">i</span>][<span class="var">j</span>]);
+        <span class="fn">printf</span>(<span class="str">"\n"</span>);
+    }
+    <span class="cm">/* Output: 58  64 */</span>
+    <span class="cm">/*        139 154 */</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-head">⚠️ Common Mistake</div>
+      <p>Always initialise the result matrix C to <code>{0}</code>. Without it, <code>C[i][j] += ...</code> accumulates into garbage values and produces wrong results.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 — TRANSPOSE
+══════════════════════════════════════════ -->
+<section id="transpose">
+  <div class="container">
+    <p class="sec-label">07 — Transpose</p>
+    <h2>Transpose of a Matrix</h2>
+    <p>The <strong>transpose</strong> of a matrix is obtained by swapping its rows and columns. Element at position <code>[i][j]</code> moves to <code>[j][i]</code>. If A is m×n, its transpose Aᵀ is n×m.</p>
+
+    <div class="matrix-visual">
+      <div class="bracket-wrap">
+        <div class="matrix m3">
+          <div class="cell hl">1</div><div class="cell hl2">2</div><div class="cell hl3">3</div>
+          <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
+        </div>
+        <div class="matrix-label">A [2×3]</div>
+      </div>
+      <span class="op-sign" style="font-size:22px">→ Aᵀ →</span>
+      <div class="bracket-wrap">
+        <div class="matrix m2">
+          <div class="cell hl">1</div><div class="cell">4</div>
+          <div class="cell hl2">2</div><div class="cell">5</div>
+          <div class="cell hl3">3</div><div class="cell">6</div>
+        </div>
+        <div class="matrix-label">Aᵀ [3×2]</div>
+      </div>
+    </div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">transpose.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="pp">#define</span> <span class="var">R</span> <span class="num">3</span>
+<span class="pp">#define</span> <span class="var">C</span> <span class="num">3</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">A</span>[<span class="var">R</span>][<span class="var">C</span>] <span class="op">=</span> {{<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>},{<span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span>},{<span class="num">7</span>,<span class="num">8</span>,<span class="num">9</span>}};
+    <span class="ty">int</span> <span class="var">T</span>[<span class="var">C</span>][<span class="var">R</span>];   <span class="cm">// transpose: dimensions flipped</span>
+    <span class="ty">int</span> <span class="var">i</span>, <span class="var">j</span>;
+
+    <span class="cm">/* Build Transpose */</span>
+    <span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">R</span>; <span class="var">i</span><span class="op">++</span>)
+        <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">C</span>; <span class="var">j</span><span class="op">++</span>)
+            <span class="var">T</span>[<span class="var">j</span>][<span class="var">i</span>] <span class="op">=</span> <span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>];  <span class="cm">// ← key line: swap indices</span>
+
+    <span class="fn">printf</span>(<span class="str">"Original:\n"</span>);
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>;<span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>;<span class="var">i</span><span class="op">++</span>){<span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>;<span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>;<span class="var">j</span><span class="op">++</span>)<span class="fn">printf</span>(<span class="str">"%4d"</span>,<span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>]);<span class="fn">printf</span>(<span class="str">"\n"</span>);}
+
+    <span class="fn">printf</span>(<span class="str">"\nTranspose:\n"</span>);
+    <span class="kw">for</span>(<span class="var">i</span><span class="op">=</span><span class="num">0</span>;<span class="var">i</span><span class="op">&lt;</span><span class="var">C</span>;<span class="var">i</span><span class="op">++</span>){<span class="kw">for</span>(<span class="var">j</span><span class="op">=</span><span class="num">0</span>;<span class="var">j</span><span class="op">&lt;</span><span class="var">R</span>;<span class="var">j</span><span class="op">++</span>)<span class="fn">printf</span>(<span class="str">"%4d"</span>,<span class="var">T</span>[<span class="var">i</span>][<span class="var">j</span>]);<span class="fn">printf</span>(<span class="str">"\n"</span>);}
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <h3>In-Place Transpose (Square Matrix only)</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">inplace_transpose.c</span>
+      </div>
+      <pre><span class="cm">/* Swap A[i][j] with A[j][i] — only j &gt; i to avoid double-swap */</span>
+<span class="kw">for</span> (<span class="var">i</span> <span class="op">=</span> <span class="num">0</span>; <span class="var">i</span> <span class="op">&lt;</span> <span class="var">N</span>; <span class="var">i</span><span class="op">++</span>) {
+    <span class="kw">for</span> (<span class="var">j</span> <span class="op">=</span> <span class="var">i</span><span class="op">+</span><span class="num">1</span>; <span class="var">j</span> <span class="op">&lt;</span> <span class="var">N</span>; <span class="var">j</span><span class="op">++</span>) {
+        <span class="ty">int</span> <span class="var">temp</span>  <span class="op">=</span> <span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>];
+        <span class="var">A</span>[<span class="var">i</span>][<span class="var">j</span>]  <span class="op">=</span> <span class="var">A</span>[<span class="var">j</span>][<span class="var">i</span>];
+        <span class="var">A</span>[<span class="var">j</span>][<span class="var">i</span>]  <span class="op">=</span> <span class="var">temp</span>;
+    }
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SECTION 8 — MULTIDIMENSIONAL ARRAYS
+══════════════════════════════════════════ -->
+<section id="multidim">
+  <div class="container">
+    <p class="sec-label">08 — Multidimensional Arrays</p>
+    <h2>Multidimensional Arrays</h2>
+    <p>C supports arrays with <strong>more than two dimensions</strong>. A 3D array can be thought of as an array of 2D matrices — like the pages of a book where each page is a grid.</p>
+
+    <div class="formula">data_type  name [ D1 ] [ D2 ] [ D3 ] ... [ Dn ];</div>
+
+    <h3>3D Array Declaration &amp; Access</h3>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">3d_array.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="cm">/* 3D array: 2 blocks, each 3x3 */</span>
+    <span class="ty">int</span> <span class="var">arr</span>[<span class="num">2</span>][<span class="num">3</span>][<span class="num">3</span>] <span class="op">=</span> {
+        {   <span class="cm">/* Block 0 */</span>
+            {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>},
+            {<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>},
+            {<span class="num">7</span>, <span class="num">8</span>, <span class="num">9</span>}
+        },
+        {   <span class="cm">/* Block 1 */</span>
+            {<span class="num">10</span>, <span class="num">11</span>, <span class="num">12</span>},
+            {<span class="num">13</span>, <span class="num">14</span>, <span class="num">15</span>},
+            {<span class="num">16</span>, <span class="num">17</span>, <span class="num">18</span>}
+        }
+    };
+
+    <span class="ty">int</span> <span class="var">b</span>, <span class="var">i</span>, <span class="var">j</span>;
+
+    <span class="cm">/* Access: arr[block][row][col] */</span>
+    <span class="fn">printf</span>(<span class="str">"arr[0][1][2] = %d\n"</span>, <span class="var">arr</span>[<span class="num">0</span>][<span class="num">1</span>][<span class="num">2</span>]);  <span class="cm">// 6</span>
+    <span class="fn">printf</span>(<span class="str">"arr[1][2][0] = %d\n"</span>, <span class="var">arr</span>[<span class="num">1</span>][<span class="num">2</span>][<span class="num">0</span>]);  <span class="cm">// 16</span>
+
+    <span class="cm">/* Print all blocks */</span>
+    <span class="kw">for</span> (<span class="var">b</span><span class="op">=</span><span class="num">0</span>; <span class="var">b</span><span class="op">&lt;</span><span class="num">2</span>; <span class="var">b</span><span class="op">++</span>) {
+        <span class="fn">printf</span>(<span class="str">"\nBlock %d:\n"</span>, <span class="var">b</span>);
+        <span class="kw">for</span> (<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="num">3</span>; <span class="var">i</span><span class="op">++</span>) {
+            <span class="kw">for</span> (<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="num">3</span>; <span class="var">j</span><span class="op">++</span>)
+                <span class="fn">printf</span>(<span class="str">"%4d"</span>, <span class="var">arr</span>[<span class="var">b</span>][<span class="var">i</span>][<span class="var">j</span>]);
+            <span class="fn">printf</span>(<span class="str">"\n"</span>);
+        }
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <h3>Memory Calculation</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Array</th><th>Dimensions</th><th>Total Elements</th><th>Memory (int=4B)</th></tr>
+        <tr><td>int a[2][3]</td><td>2D</td><td>6</td><td>24 bytes</td></tr>
+        <tr><td>int b[2][3][4]</td><td>3D</td><td>24</td><td>96 bytes</td></tr>
+        <tr><td>int c[2][3][4][5]</td><td>4D</td><td>120</td><td>480 bytes</td></tr>
+      </table>
+    </div>
+
+    <div class="formula">Memory = D1 × D2 × D3 × ... × Dn × sizeof(data_type)</div>
+
+    <h3>Taking Input for a 3D Array</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dots"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
+        <span class="fname">3d_input.c</span>
+      </div>
+      <pre><span class="pp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="pp">#define</span> <span class="var">B</span> <span class="num">2</span>
+<span class="pp">#define</span> <span class="var">R</span> <span class="num">3</span>
+<span class="pp">#define</span> <span class="var">C</span> <span class="num">3</span>
+
+<span class="kw">int</span> <span class="fn">main</span>() {
+    <span class="ty">int</span> <span class="var">arr</span>[<span class="var">B</span>][<span class="var">R</span>][<span class="var">C</span>];
+    <span class="ty">int</span> <span class="var">b</span>, <span class="var">i</span>, <span class="var">j</span>;
+
+    <span class="fn">printf</span>(<span class="str">"Enter %d elements for the 3D array:\n"</span>, <span class="var">B</span><span class="op">*</span><span class="var">R</span><span class="op">*</span><span class="var">C</span>);
+    <span class="kw">for</span> (<span class="var">b</span><span class="op">=</span><span class="num">0</span>; <span class="var">b</span><span class="op">&lt;</span><span class="var">B</span>; <span class="var">b</span><span class="op">++</span>)
+        <span class="kw">for</span> (<span class="var">i</span><span class="op">=</span><span class="num">0</span>; <span class="var">i</span><span class="op">&lt;</span><span class="var">R</span>; <span class="var">i</span><span class="op">++</span>)
+            <span class="kw">for</span> (<span class="var">j</span><span class="op">=</span><span class="num">0</span>; <span class="var">j</span><span class="op">&lt;</span><span class="var">C</span>; <span class="var">j</span><span class="op">++</span>) {
+                <span class="fn">printf</span>(<span class="str">"arr[%d][%d][%d]: "</span>, <span class="var">b</span>, <span class="var">i</span>, <span class="var">j</span>);
+                <span class="fn">scanf</span>(<span class="str">"%d"</span>, <span class="op">&amp;</span><span class="var">arr</span>[<span class="var">b</span>][<span class="var">i</span>][<span class="var">j</span>]);
+            }
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-head">💡 Real World Use</div>
+      <p>3D arrays are used in: <strong>image processing</strong> (height × width × RGB channels), <strong>video frames</strong> (frame × height × width), <strong>3D game worlds</strong> (x × y × z coordinates), and <strong>scientific simulations</strong>.</p>
+    </div>
+
+    <h3>Quick Reference Summary</h3>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Operation</th><th>Key Formula / Syntax</th><th>Loops Needed</th></tr>
+        <tr><td>Declaration</td><td>int a[R][C];</td><td>—</td></tr>
+        <tr><td>Input</td><td>scanf("%d", &amp;a[i][j]);</td><td>2 (nested)</td></tr>
+        <tr><td>Access</td><td>a[row][col]</td><td>—</td></tr>
+        <tr><td>Addition</td><td>C[i][j]=A[i][j]+B[i][j]</td><td>2 (nested)</td></tr>
+        <tr><td>Multiplication</td><td>C[i][j]+=A[i][k]*B[k][j]</td><td>3 (nested)</td></tr>
+        <tr><td>Transpose</td><td>T[j][i]=A[i][j]</td><td>2 (nested)</td></tr>
+        <tr><td>3D Access</td><td>a[b][i][j]</td><td>—</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a class="footer-logo" href="https://scholarnest21.netlify.app" target="_blank">
+    <div class="logo-icon">SN</div>
+    <div class="logo-text"><span>Scholar</span>Nest</div>
+  </a>
+  <p class="footer-sub">
+    For more notes, examples, and topics visit<br>
+    <a href="https://scholarnest21.netlify.app" target="_blank">scholarnest21.netlify.app</a>
+  </p>
+  <div class="footer-divider"></div>
+  <p class="footer-copy">Made with ♥ for students · ScholarNest · C Programming Notes</p>
+</footer>
+
+</body>
+</html>
